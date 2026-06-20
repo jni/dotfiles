@@ -1,3 +1,5 @@
+:warning: this is just slop, don't read it, find me on Zulip or whatever :warning:
+
 # dotfiles
 
 Personal config files for zsh, bash, fish, Ghostty, Neovim, git, COSMIC, and Sway,
