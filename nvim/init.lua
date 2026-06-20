@@ -158,6 +158,10 @@ vim.opt.showbreak = '______'
 -- vim.opt.expandtab = true
 vim.opt.autoindent = true
 
+-- remap tab/shift-tab in insert to indent/dedent
+vim.keymap.set('i', '<Tab>', '<C-T>')
+vim.keymap.set('i', '<S-Tab>', '<C-D>')
+
 -- formatoptions: start from default and remove 't'
 -- (don't auto-wrap text while typing)
 vim.opt.formatoptions:remove('t')
