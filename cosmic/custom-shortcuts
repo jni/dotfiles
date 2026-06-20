@@ -1,0 +1,37 @@
+{
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "space",
+    ): System(Launcher),
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "t",
+    ): Disable,
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "e",
+    ): Resizing(Outwards),
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "u",
+    ): Resizing(Inwards),
+    (
+        modifiers: [
+            Super,
+        ],
+    ): Disable,
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "Return",
+    ): System(Terminal),
+}
