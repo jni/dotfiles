@@ -24,8 +24,8 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
   },
   {
-  "j-hui/fidget.nvim",
-  opts = {},
+    "j-hui/fidget.nvim",
+    opts = {},
   },
   {
     "toppair/peek.nvim",
