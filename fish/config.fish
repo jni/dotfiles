@@ -29,3 +29,5 @@ alias pbcopy wl-copy
 alias pbpaste wl-paste
 
 fish_add_path /home/jni/.local/bin
+
+starship init fish | source
