@@ -1,0 +1,286 @@
+#!/usr/bin/env python3
+"""
+dots - a tiny, dependency-free dotfiles manager.
+
+Lives at the root of your dotfiles repo. Tracks a fixed set of configs,
+mapping a path inside this repo to its canonical location on the system.
+
+Commands:
+  collect   copy current configs from the system into this repo
+  install   symlink configs from this repo back onto the system
+  check     show the current installation status of each tracked item
+  diff      compare a backup snapshot against the current repo contents
+
+Edit DOTFILES_MAP below to add/remove tracked files.
+"""
+
+from __future__ import annotations
+
+import argparse
+import difflib
+import filecmp
+import shutil
+import sys
+from datetime import datetime
+from pathlib import Path
+
+HOME = Path.home()
+
+# repo-relative path -> absolute system path
+DOTFILES_MAP: dict[str, Path] = {
+    "zsh/zshrc": HOME / ".zshrc",
+    "bash/bashrc": HOME / ".bashrc",
+    "fish": HOME / ".config" / "fish",
+    "ghostty/config.ghostty": HOME / ".config" / "ghostty" / "config.ghostty",
+    "nvim": HOME / ".config" / "nvim",
+    "git/gitconfig": HOME / ".gitconfig",
+    "cosmic": HOME / ".config" / "cosmic",
+    "sway": HOME / ".config" / "sway",
+}
+
+REPO_DIR = Path(__file__).resolve().parent
+BACKUP_ROOT = REPO_DIR / "backups"
+
+
+def rel_abs_sys_paths():
+    """Yield (relative_name, repo_path, system_path) for each tracked item."""
+    for rel, sys_path in DOTFILES_MAP.items():
+        yield rel, REPO_DIR / rel, sys_path
+
+
+# --------------------------------------------------------------------------
+# collect: system -> repo
+# --------------------------------------------------------------------------
+
+def cmd_collect(args: argparse.Namespace) -> None:
+    for rel, dst_repo, sys_path in rel_abs_sys_paths():
+        if not sys_path.exists() and not sys_path.is_symlink():
+            print(f"  skip:       {sys_path} (does not exist)")
+            continue
+        if sys_path.is_symlink():
+            print(f"  skip:       {sys_path} (already a symlink)")
+            continue
+
+        if args.dry_run:
+            print(f"  would copy: {sys_path} -> {rel}")
+            continue
+
+        if dst_repo.exists():
+            shutil.rmtree(dst_repo) if dst_repo.is_dir() else dst_repo.unlink()
+        dst_repo.parent.mkdir(parents=True, exist_ok=True)
+        if sys_path.is_dir():
+            shutil.copytree(sys_path, dst_repo, symlinks=False)
+        else:
+            shutil.copy2(sys_path, dst_repo)
+        print(f"  copied:     {sys_path} -> {rel}")
+
+
+# --------------------------------------------------------------------------
+# install: repo -> system (symlinks)
+# --------------------------------------------------------------------------
+
+def cmd_install(args: argparse.Namespace) -> None:
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    snapshot_dir = BACKUP_ROOT / timestamp
+    made_backup = False
+
+    for rel, src_repo, sys_path in rel_abs_sys_paths():
+        if not src_repo.exists():
+            print(f"  skip:          {rel} (not present in repo)")
+            continue
+
+        if sys_path.is_symlink() and sys_path.resolve() == src_repo.resolve():
+            print(f"  ok:            {sys_path} (already linked)")
+            continue
+
+        exists_here = sys_path.exists() or sys_path.is_symlink()
+
+        if args.dry_run:
+            if exists_here:
+                print(f"  would back up: {sys_path}")
+            print(f"  would link:    {sys_path} -> {rel}")
+            continue
+
+        if exists_here:
+            if sys_path.is_symlink():
+                # Stale symlink pointing somewhere else - nothing worth
+                # preserving, just clear it.
+                sys_path.unlink()
+            else:
+                backup_dest = snapshot_dir / rel
+                backup_dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(sys_path, backup_dest)
+                made_backup = True
+                print(f"  backed up:     {sys_path} -> .backups/{timestamp}/{rel}")
+
+        sys_path.parent.mkdir(parents=True, exist_ok=True)
+        sys_path.symlink_to(src_repo, target_is_directory=src_repo.is_dir())
+        print(f"  linked:        {sys_path} -> {rel}")
+
+    if made_backup:
+        print(f"\nBackups saved under .backups/{timestamp}/")
+
+
+# --------------------------------------------------------------------------
+# check: report current status
+# --------------------------------------------------------------------------
+
+def cmd_check(args: argparse.Namespace) -> None:
+    width = max(len(rel) for rel, _, _ in rel_abs_sys_paths())
+    for rel, src_repo, sys_path in rel_abs_sys_paths():
+        if not src_repo.exists():
+            status = "not in repo"
+        elif sys_path.is_symlink():
+            status = (
+                "linked correctly"
+                if sys_path.resolve() == src_repo.resolve()
+                else f"symlinked elsewhere -> {sys_path.resolve()}"
+            )
+        elif sys_path.exists():
+            if src_repo.is_dir() or sys_path.is_dir():
+                status = "real directory present (not linked)"
+            else:
+                same = filecmp.cmp(sys_path, src_repo, shallow=False)
+                status = (
+                    "real file present, matches repo"
+                    if same
+                    else "real file present, DIFFERS from repo"
+                )
+        else:
+            status = "not installed"
+        print(f"  {rel:<{width}}  {status}")
+
+
+# --------------------------------------------------------------------------
+# diff: compare a backup snapshot against current repo contents
+# --------------------------------------------------------------------------
+
+def list_backups() -> list[str]:
+    if not BACKUP_ROOT.exists():
+        return []
+    return sorted(p.name for p in BACKUP_ROOT.iterdir() if p.is_dir())
+
+
+def diff_files(old: Path, new: Path, label: str) -> None:
+    try:
+        old_lines = old.read_text().splitlines(keepends=True)
+        new_lines = new.read_text().splitlines(keepends=True)
+    except (UnicodeDecodeError, OSError):
+        print(f"=== {label}: binary or unreadable, skipping line diff ===")
+        return
+
+    diff = list(
+        difflib.unified_diff(
+            old_lines, new_lines,
+            fromfile=f"backup/{label}", tofile=f"current/{label}",
+        )
+    )
+    if diff:
+        print(f"=== {label} ===")
+        sys.stdout.writelines(diff)
+        print()
+    else:
+        print(f"    {label}: identical")
+
+
+def diff_dirs(old: Path, new: Path, label: str) -> None:
+    if not old.is_dir() or not new.is_dir():
+        print(f"=== {label}: one side is a file, the other a directory ===")
+        return
+
+    cmp = filecmp.dircmp(str(old), str(new))
+    found_diff = False
+
+    def walk(cmp: filecmp.dircmp, prefix: str) -> None:
+        nonlocal found_diff
+        for name in cmp.diff_files:
+            found_diff = True
+            diff_files(Path(cmp.left) / name, Path(cmp.right) / name, f"{prefix}/{name}")
+        for name in cmp.left_only:
+            found_diff = True
+            print(f"  only in backup:  {prefix}/{name}")
+        for name in cmp.right_only:
+            found_diff = True
+            print(f"  only in current: {prefix}/{name}")
+        for name, sub in cmp.subdirs.items():
+            walk(sub, f"{prefix}/{name}")
+
+    walk(cmp, label)
+    if not found_diff:
+        print(f"    {label}: identical")
+
+
+def cmd_diff(args: argparse.Namespace) -> None:
+    backups = list_backups()
+    if not backups:
+        print("No backups found under .backups/")
+        return
+
+    if args.list:
+        for b in backups:
+            print(b)
+        return
+
+    timestamp = args.timestamp or backups[-1]
+    snapshot_dir = BACKUP_ROOT / timestamp
+    if not snapshot_dir.is_dir():
+        print(f"No such backup: {timestamp}", file=sys.stderr)
+        print("Available backups:", file=sys.stderr)
+        for b in backups:
+            print(f"  {b}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Comparing backup '{timestamp}' against current repo contents\n")
+
+    found_any = False
+    for rel, src_repo, _sys_path in rel_abs_sys_paths():
+        backed_up = snapshot_dir / rel
+        if not backed_up.exists():
+            continue
+        found_any = True
+        if backed_up.is_dir():
+            diff_dirs(backed_up, src_repo, rel)
+        else:
+            diff_files(backed_up, src_repo, rel)
+
+    if not found_any:
+        print("(nothing tracked was backed up in this snapshot)")
+
+
+# --------------------------------------------------------------------------
+# CLI
+# --------------------------------------------------------------------------
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="dots", description="Minimal dependency-free dotfiles manager."
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("collect", help="copy configs from the system into this repo")
+    p.add_argument("--dry-run", action="store_true", help="show actions without making changes")
+    p.set_defaults(func=cmd_collect)
+
+    p = sub.add_parser("install", help="symlink configs from this repo onto the system")
+    p.add_argument("--dry-run", action="store_true", help="show actions without making changes")
+    p.set_defaults(func=cmd_install)
+
+    p = sub.add_parser("check", help="show current installation status of each tracked item")
+    p.set_defaults(func=cmd_check)
+
+    p = sub.add_parser("diff", help="compare a backup snapshot against current repo contents")
+    p.add_argument("timestamp", nargs="?", help="backup snapshot to compare (default: most recent)")
+    p.add_argument("--list", action="store_true", help="list available backup snapshots and exit")
+    p.set_defaults(func=cmd_diff)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    args.func(args)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
