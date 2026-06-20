@@ -13,6 +13,13 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   { "tpope/vim-sleuth" },
   {
+    "lukas-reineke/virt-column.nvim",
+    opts = {
+      char = "│",
+      virtcolumn = "80",
+    },
+  },
+  {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
   },
