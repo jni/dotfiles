@@ -30,7 +30,8 @@ HOME = Path.home()
 DOTFILES_MAP: dict[str, Path] = {
     "zsh/zshrc": HOME / ".zshrc",
     "bash/bashrc": HOME / ".bashrc",
-    "fish": HOME / ".config" / "fish",
+    "fish/config.fish": HOME / ".config" / "fish" / "config.fish",
+    "fish/fish_plugins": HOME / ".config" / "fish" / "fish_plugins",
     "ghostty/config.ghostty": HOME / ".config" / "ghostty" / "config.ghostty",
     "nvim": HOME / ".config" / "nvim",
     "git/gitconfig": HOME / ".gitconfig",
