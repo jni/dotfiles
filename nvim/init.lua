@@ -11,6 +11,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- plugins
 require("lazy").setup({
+  { "tpope/vim-sleuth" },
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
@@ -151,9 +152,10 @@ vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
 vim.opt.linebreak = true
 vim.opt.showbreak = '______'
 
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
+-- indentation options: not needed with tpope/vim-sleuth
+-- vim.opt.tabstop = 4
+-- vim.opt.shiftwidth = 4
+-- vim.opt.expandtab = true
 vim.opt.autoindent = true
 
 -- formatoptions: start from default and remove 't'
