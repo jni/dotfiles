@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import filecmp
+import os
 import shutil
 import sys
 from datetime import datetime
@@ -39,7 +40,8 @@ DOTFILES_MAP: dict[str, Path] = {
     "cosmic/custom-shortcuts": HOME / ".config" / "cosmic" / "com.system76.CosmicSettings.Shortcuts" / "v1" / "custom",
     "cosmic/system-actions": HOME / ".config" / "cosmic" / "com.system76.CosmicSettings.Shortcuts" / "v1" / "system_actions",
     "sway": HOME / ".config" / "sway",
-    "starship/starship.toml": HOME / ".config" / "starship.toml"
+    "starship/starship.toml": HOME / ".config" / "starship.toml",
+    "keyd/default.conf": Path("/etc/keyd/default.conf"),
 }
 
 REPO_DIR = Path(__file__).resolve().parent
@@ -50,6 +52,19 @@ def rel_abs_sys_paths():
     """Yield (relative_name, repo_path, system_path) for each tracked item."""
     for rel, sys_path in DOTFILES_MAP.items():
         yield rel, REPO_DIR / rel, sys_path
+
+
+def requires_root(sys_path: Path) -> bool:
+    """A target needs root if it lives outside $HOME (e.g. /etc/...)."""
+    try:
+        sys_path.resolve().relative_to(HOME.resolve())
+        return False
+    except ValueError:
+        return True
+
+
+def running_as_root() -> bool:
+    return hasattr(os, "geteuid") and os.geteuid() == 0
 
 
 # --------------------------------------------------------------------------
@@ -87,8 +102,15 @@ def cmd_install(args: argparse.Namespace) -> None:
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     snapshot_dir = BACKUP_ROOT / timestamp
     made_backup = False
+    is_root = running_as_root()
+    skipped_for_privileges: list[tuple[str, bool]] = []
 
     for rel, src_repo, sys_path in rel_abs_sys_paths():
+        needs_root = requires_root(sys_path)
+        if needs_root != is_root:
+            skipped_for_privileges.append((rel, needs_root))
+            continue
+
         if not src_repo.exists():
             print(f"  skip:          {rel} (not present in repo)")
             continue
@@ -124,6 +146,13 @@ def cmd_install(args: argparse.Namespace) -> None:
     if made_backup:
         print(f"\nBackups saved under .backups/{timestamp}/")
 
+    if skipped_for_privileges:
+        rerun_as = "without sudo" if is_root else "with sudo"
+        print(f"\nSkipped (re-run {rerun_as} to link these):")
+        for rel, needs_root in skipped_for_privileges:
+            tag = "needs sudo" if needs_root else "user-level"
+            print(f"  {rel}  ({tag})")
+
 
 # --------------------------------------------------------------------------
 # check: report current status
@@ -152,6 +181,8 @@ def cmd_check(args: argparse.Namespace) -> None:
                 )
         else:
             status = "not installed"
+        if requires_root(sys_path):
+            status += "  [sudo]"
         print(f"  {rel:<{width}}  {status}")
 
 
