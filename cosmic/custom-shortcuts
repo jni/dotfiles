@@ -1,6 +1,14 @@
 {
     (
         modifiers: [
+            Ctrl,
+            Shift,
+        ],
+        key: "semicolon",
+        description: Some("emoji picker"),
+    ): Spawn("flatpak run it.mijorus.smile"),
+    (
+        modifiers: [
             Super,
         ],
         key: "space",
