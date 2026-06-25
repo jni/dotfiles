@@ -2,23 +2,28 @@
 
 # dotfiles
 
-Personal config files for zsh, bash, fish, Ghostty, Neovim, git, COSMIC, and Sway,
-managed by a single dependency-free Python script, `dots`.
+Personal config files for zsh, bash, fish, Ghostty, Neovim, git, COSMIC, Sway,
+starship, and keyd, managed by a single dependency-free Python script, `dots`.
 
 ## Layout
 
 ```
 dotfiles/
-├── dots           # the manager itself - lives at the repo root
-├── zsh/.zshrc
-├── bash/.bashrc
-├── fish/          # ~/.config/fish
-├── ghostty/config
-├── nvim/          # ~/.config/nvim
-├── git/.gitconfig
-├── cosmic/        # ~/.config/cosmic
-├── sway/          # ~/.config/sway
-└── .backups/      # created automatically by `dots install`, gitignore-able
+├── dots                        # the manager itself - lives at the repo root
+├── zsh/zshrc                   # ~/.zshrc
+├── bash/bashrc                 # ~/.bashrc
+├── fish/config.fish            # ~/.config/fish/config.fish
+├── fish/fish_plugins           # ~/.config/fish/fish_plugins
+├── ghostty/config.ghostty      # ~/.config/ghostty/config.ghostty
+├── nvim/                       # ~/.config/nvim
+├── git/gitconfig               # ~/.gitconfig
+├── cosmic/xkb_config           # ~/.config/cosmic/com.system76.CosmicComp/v1/xkb_config
+├── cosmic/custom-shortcuts     # ~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom
+├── cosmic/system-actions       # ~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/system_actions
+├── sway/                       # ~/.config/sway
+├── starship/starship.toml      # ~/.config/starship.toml
+├── keyd/default.conf           # /etc/keyd/default.conf
+└── backups/                    # created automatically by `dots install`, gitignore-able
 ```
 
 ## Commands
@@ -61,7 +66,7 @@ chmod +x dots
 
 Each tracked file/directory becomes a symlink pointing into the repo
 (e.g. `~/.config/nvim` -> `~/dotfiles/nvim`). Anything that was already
-sitting at that path gets moved into `.backups/<timestamp>/...` inside
+sitting at that path gets moved into `backups/<timestamp>/...` inside
 the repo first — nothing is ever silently overwritten or deleted.
 
 ## Keeping it in sync
@@ -97,13 +102,9 @@ Edit the `DOTFILES_MAP` dictionary near the top of `dots`.
 
 ## Notes / things worth reviewing before your first commit
 
-- **`cosmic/`** mirrors the entire `~/.config/cosmic` tree, which COSMIC
-  spreads across many per-component subfolders. After the first
-  `./dots collect`, skim `git status` for anything that looks like
-  machine-specific state (caches, instance IDs, etc.) rather than actual
-  settings, and remove/gitignore it if so.
-- **`fish/fish_variables`** stores fish's universal variables (including
-  any `abbr` abbreviations you've set) — generally fine to track, but
-  worth a glance in case anything machine-specific snuck in there.
-- Consider adding `.backups/` to `.gitignore` — those are local safety
+- **`cosmic/`** tracks three specific files (keyboard layout, custom
+  shortcuts, and system-action overrides) rather than the entire
+  `~/.config/cosmic` tree. COSMIC spreads state across many per-component
+  subfolders; only these three have been singled out as worth versioning.
+- Consider adding `backups/` to `.gitignore` — those are local safety
   snapshots, not really meant for version control.
