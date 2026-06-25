@@ -31,3 +31,5 @@ alias pbpaste wl-paste
 fish_add_path /home/jni/.local/bin
 
 starship init fish | source
+
+command -q keyd; or command -q keyd.rvaiya; and alias keyd 'keyd.rvaiya'

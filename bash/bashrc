@@ -142,3 +142,6 @@ mu activate all
 
 
 export FJ_HOST=codeberg.org
+
+# rename keyd.raiya to keyd if it's present
+command -v keyd &>/dev/null || command -v keyd.rvaiya &>/dev/null && alias keyd='keyd.rvaiya'
