@@ -33,3 +33,8 @@ fish_add_path /home/jni/.local/bin
 starship init fish | source
 
 command -q keyd; or command -q keyd.rvaiya; and alias keyd 'keyd.rvaiya'
+
+if test (hostname) = "sturdy"
+    alias audio-tv='pactl set-card-profile alsa_card.pci-0000_00_1f.3 output:hdmi-stereo+input:analog-stereo'
+    alias audio-speakers='pactl set-card-profile alsa_card.pci-0000_00_1f.3 output:analog-stereo+input:analog-stereo'
+end
