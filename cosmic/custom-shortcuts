@@ -41,7 +41,7 @@
             Super,
         ],
         key: "Return",
-    ): System(Terminal),
+    ): Spawn("sh -c 'ghostty +new-window --working-directory=$HOME'"),
     (
         modifiers: [
             Super,
