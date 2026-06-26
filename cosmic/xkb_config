@@ -3,7 +3,7 @@
     model: "",
     layout: "us,us",
     variant: "dvorak,",
-    options: Some("lv3:ralt_switch,compose:prsc,caps:escape,altwin:swap_lalt_lwin"),
+    options: Some("altwin:swap_ralt_rwin,compose:prsc,caps:escape,altwin:swap_lalt_lwin"),
     repeat_delay: 600,
     repeat_rate: 25,
 )
