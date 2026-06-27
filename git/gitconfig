@@ -15,3 +15,16 @@
 	helper = libsecret
 [url "git@codeberg.org:"]
 	insteadOf = https://codeberg.org/
+
+[user]
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICq5XRz4EFyJpZ9aETQz3K1sC7ChIPWny1wjdXvHa2Aw
+
+[gpg]
+  format = ssh
+
+[gpg "ssh"]
+  program = "/opt/1Password/op-ssh-sign"
+
+[commit]
+  gpgsign = true
+
