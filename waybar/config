@@ -17,9 +17,10 @@
         "cpu",
         "pulseaudio",
         "battery",
-        "clock#madrid",
         "clock#la",
         "clock#dc",
+        "clock#madrid",
+        "clock#melbourne",
         "tray"
     ],
 
@@ -75,13 +76,8 @@
 
     // i3status: the four tztime clocks. Local is centered; the others sit right.
     "clock#local": {
-        "timezone": "Australia/Melbourne",
         "format": "{:%a %d %b %H:%M}",
         "tooltip-format": "<tt>{calendar}</tt>"
-    },
-    "clock#madrid": {
-        "timezone": "Europe/Madrid",
-        "format": "MAD {:%H:%M(%a)}"
     },
     "clock#la": {
         "timezone": "America/Los_Angeles",
@@ -90,6 +86,15 @@
     "clock#dc": {
         "timezone": "America/New_York",
         "format": "NY {:%H:%M(%a)}"
+    },
+    "clock#madrid": {
+        "timezone": "Europe/Madrid",
+        "format": "MAD {:%H:%M(%a)}"
+    },
+    "clock#melbourne": {
+        "timezone": "Australia/Melbourne",
+        "format": "{:%a %d %b %H:%M}",
+        "format": "MEL {:%H:%M(%a)}"
     },
 
     "tray": {
