@@ -40,6 +40,7 @@ DOTFILES_MAP: dict[str, Path] = {
     "cosmic/custom-shortcuts": HOME / ".config" / "cosmic" / "com.system76.CosmicSettings.Shortcuts" / "v1" / "custom",
     "cosmic/system-actions": HOME / ".config" / "cosmic" / "com.system76.CosmicSettings.Shortcuts" / "v1" / "system_actions",
     "sway": HOME / ".config" / "sway",
+    "waybar": HOME / ".config" / "waybar",
     "starship/starship.toml": HOME / ".config" / "starship.toml",
     "keyd/default.conf": Path("/etc/keyd/default.conf"),
 }

@@ -1,0 +1,99 @@
+// Waybar configuration for sway.
+// Reproduces the modules from the old sway/i3status.conf:
+//   disk /, wireless/ethernet, battery, load/cpu, the MAD/SF/NY/local clocks,
+//   and volume -- plus a system tray.
+// Launched by sway via `bar { swaybar_command waybar }` (see sway/config).
+// Docs: `man waybar` and https://github.com/Alexays/Waybar/wiki/Configuration
+{
+    "layer": "top",
+    "position": "bottom",
+    "height": 24,
+
+    "modules-left": ["sway/workspaces", "sway/mode"],
+    "modules-center": ["clock#local"],
+    "modules-right": [
+        "network",
+        "disk",
+        "cpu",
+        "pulseaudio",
+        "battery",
+        "clock#madrid",
+        "clock#la",
+        "clock#dc",
+        "tray"
+    ],
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": false
+    },
+
+    "sway/mode": {
+        "format": "<span style=\"italic\">{}</span>"
+    },
+
+    // i3status: disk "/" { format = "%avail" }
+    "disk": {
+        "path": "/",
+        "format": "{free}",
+        "tooltip-format": "{used} used of {total} on {path}"
+    },
+
+    // i3status: wireless/ethernet _first_
+    "network": {
+        "format-wifi": "W: {essid} {ipaddr}",
+        "format-ethernet": "E: {ipaddr}",
+        "format-disconnected": "down",
+        "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%) {ipaddr}"
+    },
+
+    // i3status: load { format = "%1min" } -- waybar reports CPU load average.
+    "cpu": {
+        "format": "{load}",
+        "tooltip": true
+    },
+
+    // i3status: volume master -- now via PipeWire/PulseAudio.
+    "pulseaudio": {
+        "format": "♪: {volume}%",
+        "format-muted": "♪: X",
+        "scroll-step": 5,
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "tooltip-format": "{desc}: {volume}%"
+    },
+
+    // i3status: battery 0
+    "battery": {
+        "format": "{icon} {capacity}%",
+        "format-charging": "⚡ {capacity}%",
+        "format-full": "☻ {capacity}%",
+        "format-icons": ["🔋"],
+        "states": { "warning": 20, "critical": 10 },
+        "tooltip-format": "{timeTo} ({power}W)"
+    },
+
+    // i3status: the four tztime clocks. Local is centered; the others sit right.
+    "clock#local": {
+        "timezone": "Australia/Melbourne",
+        "format": "{:%a %d %b %H:%M}",
+        "tooltip-format": "<tt>{calendar}</tt>"
+    },
+    "clock#madrid": {
+        "timezone": "Europe/Madrid",
+        "format": "MAD {:%H:%M(%a)}"
+    },
+    "clock#la": {
+        "timezone": "America/Los_Angeles",
+        "format": "SF {:%H:%M(%a)}"
+    },
+    "clock#dc": {
+        "timezone": "America/New_York",
+        "format": "NY {:%H:%M(%a)}"
+    },
+
+    "tray": {
+        "icon-size": 18,
+        "spacing": 8
+    }
+}

@@ -259,11 +259,13 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# Start swaybar to display a workspace bar (plus i3status' system information).
-# i3status is compositor-agnostic and works under sway unchanged.
+# Status bar: Waybar (replaces swaybar + i3status).
+# `swaybar_command waybar` hands the bar over to Waybar but lets sway own its
+# lifecycle, so it restarts on `reload` and goes away on exit -- no stray
+# `exec waybar` needed. Waybar's own config lives in ~/.config/waybar/ (tracked
+# in these dotfiles) and draws the workspaces, system info, and tray itself.
 bar {
-        status_command i3status -c ~/.config/sway/i3status.conf
-        tray_output primary
+        swaybar_command waybar
 }
 
 # Make sure apps and the tray see the Wayland/desktop environment.

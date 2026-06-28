@@ -1,0 +1,57 @@
+/* Waybar style for sway. Dark theme matching the purple swaylock palette
+ * (ring-color 7c5cbf, text e0def4). Edit freely -- changes apply on reload. */
+
+* {
+    font-family: "DejaVu Sans Mono", monospace;
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background-color: #1e1e2e;
+    color: #e0def4;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    background-color: transparent;
+    color: #e0def4;
+    border-bottom: 2px solid transparent;
+}
+
+#workspaces button.focused {
+    background-color: #2e2a3e;
+    border-bottom: 2px solid #7c5cbf;
+}
+
+#workspaces button.urgent {
+    color: #bf616a;
+    border-bottom: 2px solid #bf616a;
+}
+
+#mode {
+    color: #ebcb8b;
+    padding: 0 8px;
+}
+
+#network,
+#disk,
+#cpu,
+#pulseaudio,
+#battery,
+#clock,
+#tray {
+    padding: 0 10px;
+}
+
+#battery.warning {
+    color: #ebcb8b;
+}
+
+#battery.critical {
+    color: #bf616a;
+}
+
+#clock.local {
+    color: #9d7cff;
+}
