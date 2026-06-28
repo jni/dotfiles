@@ -1,7 +1,7 @@
 set $mod Mod4
 
 # Font for window titles. Also used by the bar unless overridden in its block.
-font pango:DejaVu Sans Mono 12
+font pango:Atkinson Hyperlegible Next 14
 
 # PORT: name the apps once and reference them below.
 # Terminal is Ghostty (configured elsewhere in these dotfiles).
@@ -198,7 +198,7 @@ bindsym XF86MonBrightnessDown exec brightnessctl set 10%- # decrease screen brig
 set $lock swaylock -f \
     --image /usr/share/backgrounds/cosmic/orion_nebula_nasa_heic0601a.jpg \
     --scaling fill \
-    --font "DejaVu Sans Mono" \
+    --font "Atkinson Hyperlegible Next" \
     --indicator-radius 110 \
     --indicator-thickness 8 \
     --indicator-caps-lock \
