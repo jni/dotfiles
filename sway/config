@@ -150,6 +150,17 @@ input "type:touchpad" {
 # Original: exec feh --bg-fill /usr/share/backgrounds/Halifax_Sunset_by_Vlad_Drobinin.jpg
 output * bg /usr/share/backgrounds/cosmic/orion_nebula_nasa_heic0601a.jpg fill
 
+# Per-monitor scaling.
+# PORT: sway does no automatic HiDPI scaling -- set it explicitly per output.
+# Outputs are matched by the names sway reports (`swaymsg -t get_outputs`):
+#   eDP-1    = the built-in 2560x1440 laptop panel
+#   HDMI-A-1 = the external 3840x2160 (4K) Philips display
+# `scale` divides logical resolution by the factor (scale 2.0 on 1440p ->
+# 1280x720 of usable space; 1.5 -> ~1707x960). Tune to taste -- you can test a
+# value live without editing this file:  swaymsg output eDP-1 scale 1.25
+output eDP-1 scale 1.25
+output HDMI-A-1 scale 1.25
+
 # Audio controls.
 # PORT: switched from pactl-with-hardcoded-sink-0 to wpctl (native PipeWire
 # tool, already installed). @DEFAULT_AUDIO_SINK@ follows the real default sink,
