@@ -1,0 +1,255 @@
+set $mod Mod4
+
+# Font for window titles. Also used by the bar unless overridden in its block.
+font pango:DejaVu Sans Mono 12
+
+# PORT: name the apps once and reference them below.
+# Terminal is Ghostty (configured elsewhere in these dotfiles).
+set $term ghostty
+# PORT: dmenu is X11-only. wofi is a common Wayland launcher (drun = .desktop apps).
+# Alternatives: bemenu-run, wmenu-run (sway's modern default), fuzzel.
+set $menu wofi --show drun
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# start a terminal
+# PORT: was `exec i3-sensible-terminal`
+bindsym $mod+Return exec $term
+
+# kill focused window
+bindsym $mod+Shift+apostrophe kill
+
+# start a program launcher
+bindsym $mod+d exec $menu
+# There also is the (new) i3-dmenu-desktop which only displays applications
+# shipping a .desktop file. It is a wrapper around dmenu, so you need that
+# installed.
+# bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# move workspaces
+bindsym Mod4+Control+Left workspace prev
+bindsym Mod4+Control+Right workspace next
+bindsym Mod4+Control+Shift+Left move container to workspace prev
+bindsym Mod4+Control+Shift+Right move container to workspace next
+
+# split in horizontal orientation
+bindsym $mod+h split h
+
+# split in vertical orientation
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# change container layout (stacked, tabbed, splitv)
+bindsym $mod+s layout stacking
+bindsym $mod+t layout tabbed
+bindsym $mod+e layout splitv
+
+# toggle tiling / floating
+bindsym $mod+Shift+space floating toggle
+
+# change focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+
+# enable imagej floating
+for_window [title="\(Fiji Is Just\) ImageJ"] floating enable
+
+# focus the parent container
+bindsym $mod+a focus parent
+
+# focus the child container
+#bindsym $mod+d focus child
+
+# switch to workspace
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+bindsym $mod+0 workspace number 10
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace number 1, workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2, workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3, workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4, workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5, workspace number 5
+bindsym $mod+Shift+6 move container to workspace number 6, workspace number 6
+bindsym $mod+Shift+7 move container to workspace number 7, workspace number 7
+bindsym $mod+Shift+8 move container to workspace number 8, workspace number 8
+bindsym $mod+Shift+9 move container to workspace number 9, workspace number 9
+bindsym $mod+Shift+0 move container to workspace number 10, workspace number 10
+
+# rename current workspace
+# PORT: i3-input is X11-only. sway has no built-in input prompt; this uses a
+# small helper. If you don't have one, install e.g. `swayrename` or replace the
+# prompt with wofi/bemenu. Original line kept below for reference.
+# bindsym $mod+n exec i3-input -F 'rename workspace to "%s"' -P 'New name: ' -f "pango:DejaVu Sans Mono 32"
+bindsym $mod+n exec swaymsg rename workspace to "$(echo '' | wofi --dmenu -p 'New name:')"
+
+# reload the configuration file
+bindsym $mod+Shift+c reload
+# OBSOLETE: i3's `restart` does an X11 in-place restart; sway has no equivalent.
+# `reload` (above) already re-reads the config. Original kept for reference.
+# bindsym $mod+Shift+r restart
+# exit sway (logs you out of your Wayland session)
+# PORT: i3-nagbar -> swaynag, i3-msg -> swaymsg
+bindsym $mod+Shift+period exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+
+# startup programs
+exec --no-startup-id nm-applet --indicator
+exec --no-startup-id dropbox start
+
+# keyboard and trackpad settings
+input "type:keyboard" {
+    xkb_layout us,us
+    xkb_variant dvorak,
+    # grp:shifts_toggle = press both Shifts together to switch layout
+    # (dvorak <-> qwerty). Works on the swaylock screen too, since it's xkb-level.
+    xkb_options grp:shifts_toggle,compose:prsc,caps:escape,altwin:swap_lalt_lwin
+}
+
+# PORT: synclient/syndaemon are the old X11 synaptics driver, replaced by
+# libinput. Configure the touchpad with a sway input block instead.
+# Original: synclient PalmDetect=1 HorizTwoFingerScroll=1 VertScrollDelta=-243 \
+#           HorizScrollDelta=-243 TapButton1=0   (negative deltas = natural scroll,
+#           TapButton1=0 = tap-to-click disabled)
+# Original: syndaemon -i 0.5 -K -t   (ignore taps while typing -> dwt)
+input "type:touchpad" {
+    # tap disabled
+    natural_scroll enabled
+    scroll_method two_finger
+    dwt enabled
+}
+
+# PORT: feh is X11-only; sway sets wallpapers natively via `output`.
+# Original: exec feh --bg-fill /usr/share/backgrounds/Halifax_Sunset_by_Vlad_Drobinin.jpg
+output * bg /usr/share/backgrounds/cosmic/orion_nebula_nasa_heic0601a.jpg fill
+
+# Audio controls.
+# PORT: switched from pactl-with-hardcoded-sink-0 to wpctl (native PipeWire
+# tool, already installed). @DEFAULT_AUDIO_SINK@ follows the real default sink,
+# so this keeps working across HDMI/Bluetooth/dock changes. -l 1.0 caps volume
+# at 100% so RaiseVolume can't push past it.
+# Original: pactl set-sink-mute 0 0 && pactl set-sink-volume 0 +5%
+#           pactl set-sink-mute 0 0 && pactl set-sink-volume 0 -5%
+#           pactl set-sink-mute 0 toggle
+bindsym XF86AudioRaiseVolume exec wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioLowerVolume exec wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%-
+bindsym XF86AudioMute        exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+# Screen brightness controls.
+# PORT: switched from `light` (not installed; setuid-based) to brightnessctl,
+# which talks to systemd-logind and so works in the active sway session without
+# the video group or a setuid bit -- the same logind path COSMIC used natively.
+# Install with: sudo apt install brightnessctl
+# Original: light -A 10 / light -U 10
+bindsym XF86MonBrightnessUp   exec brightnessctl set 10%+ # increase screen brightness
+bindsym XF86MonBrightnessDown exec brightnessctl set 10%- # decrease screen brightness
+
+# Screen lock (plain swaylock -- no effects fork needed).
+# PORT: replaces the old X11 i3lock-based ~/scripts/fuzzy-lock.sh.
+# Original: bindsym Control+Mod4+l exec "~/scripts/fuzzy-lock.sh"
+#
+# swaylock uses the ext-session-lock-v1 protocol: the compositor keeps the
+# screen locked even if the locker crashes, so it fails secure.
+#
+# No blur (that needs the unmaintained swaylock-effects fork). Instead we use
+# the same nebula wallpaper as the desktop, scaled to fill, with a themed
+# indicator ring that changes colour by state: idle=purple, typing-highlight=
+# bright purple, backspace=red, verifying=amber, wrong=red, cleared=green.
+# Colours are RRGGBBAA hex without a leading '#'.
+# $lock is defined once and reused by the hotkey and swayidle below.
+set $lock swaylock -f \
+    --image /usr/share/backgrounds/cosmic/orion_nebula_nasa_heic0601a.jpg \
+    --scaling fill \
+    --font "DejaVu Sans Mono" \
+    --indicator-radius 110 \
+    --indicator-thickness 8 \
+    --indicator-caps-lock \
+    --show-failed-attempts \
+    --show-keyboard-layout \
+    --inside-color 1e1e2ecc \
+    --inside-clear-color 1e2e1ecc \
+    --inside-ver-color 2e2a1ecc \
+    --inside-wrong-color 2e1e1ecc \
+    --ring-color 7c5cbfff \
+    --ring-clear-color a3be8cff \
+    --ring-ver-color ebcb8bff \
+    --ring-wrong-color bf616aff \
+    --key-hl-color 9d7cffff \
+    --bs-hl-color bf616aff \
+    --line-uses-ring \
+    --separator-color 00000000 \
+    --text-color e0def4ff \
+    --text-clear-color e0def4ff \
+    --text-ver-color e0def4ff \
+    --text-wrong-color e0def4ff
+
+# Manual lock
+bindsym Control+Mod4+l exec $lock
+
+# Auto-lock + display power management.
+# - lock after 5 min idle
+# - blank the outputs after 10 min (and restore on activity)
+# - always lock right before the system suspends, so it's locked on resume
+exec swayidle -w \
+    timeout 300 '$lock' \
+    timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
+    before-sleep '$lock'
+
+# resize window (you can also use the mouse for that)
+mode "resize" {
+        # These bindings trigger as soon as you enter the resize mode
+
+        # Pressing left will shrink the window’s width.
+        # Pressing right will grow the window’s width.
+        # Pressing up will shrink the window’s height.
+        # Pressing down will grow the window’s height.
+        bindsym h resize shrink width 5 px or 5 ppt
+        bindsym t resize grow height 5 px or 5 ppt
+        bindsym n resize shrink height 5 px or 5 ppt
+        bindsym s resize grow width 5 px or 5 ppt
+
+        # same bindings, but for the arrow keys
+        bindsym Left resize shrink width 5 px or 5 ppt
+        bindsym Down resize shrink height 5 px or 5 ppt
+        bindsym Up resize grow height 5 px or 5 ppt
+        bindsym Right resize grow width 5 px or 5 ppt
+
+        # back to normal: Enter or Escape
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+# Start swaybar to display a workspace bar (plus i3status' system information).
+# i3status is compositor-agnostic and works under sway unchanged.
+bar {
+        status_command i3status -c ~/.config/sway/i3status.conf
+        tray_output primary
+}
+
+# Make sure apps and the tray see the Wayland/desktop environment.
+# PORT: needed so xdg-desktop-portal, the tray, and dbus-activated apps work.
+exec --no-startup-id dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
