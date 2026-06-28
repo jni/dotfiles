@@ -13,6 +13,14 @@ set $menu wofi --show drun
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
+# Gaps between tiled windows (the old i3-gaps feature, built into sway).
+# `inner` = space between adjacent windows; `outer` = extra space to the screen
+# edge (added on top of inner). smart_gaps off keeps the gap even with a single
+# window. Tune live without editing:  swaymsg gaps inner all set 8
+gaps inner 6
+gaps outer 0
+smart_gaps off
+
 # start a terminal
 # PORT: was `exec i3-sensible-terminal`
 bindsym $mod+Return exec $term
