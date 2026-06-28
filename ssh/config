@@ -1,0 +1,27 @@
+# SSH client config.
+#
+# Private keys live in 1Password; its agent serves them (IdentityAgent below).
+# Each host pins ONE key by its PUBLIC half via IdentitiesOnly + IdentityFile,
+# so a connection offers only the right key -- no "too many authentication
+# failures" from the agent dumping every key. The .pub files stay on disk
+# (public keys aren't secret); the private keys do not.
+#
+# ssh resolves each option first-match-wins, so specific hosts MUST come before
+# `Host *` (which only supplies the shared IdentityAgent).
+
+Host github.com
+	User git
+	IdentitiesOnly yes
+	IdentityFile ~/.ssh/id_ed25519.pub
+
+Host knot.jni.codes
+	IdentitiesOnly yes
+	IdentityFile ~/.ssh/id_ed25519.pub
+
+Host codeberg.org
+	User git
+	IdentitiesOnly yes
+	IdentityFile ~/.ssh/codeberg.pub
+
+Host *
+	IdentityAgent ~/.1password/agent.sock
