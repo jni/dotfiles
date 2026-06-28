@@ -40,8 +40,18 @@ window#waybar {
 #pulseaudio,
 #battery,
 #clock,
-#tray {
+#tray,
+#custom-power {
     padding: 0 10px;
+}
+
+#custom-power {
+    color: #bf616a;
+    padding-right: 14px;
+}
+
+#custom-power:hover {
+    color: #e0def4;
 }
 
 #battery.warning {

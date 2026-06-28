@@ -21,7 +21,8 @@
         "clock#dc",
         "clock#madrid",
         "clock#melbourne",
-        "tray"
+        "tray",
+        "custom/power"
     ],
 
     "sway/workspaces": {
@@ -100,5 +101,14 @@
     "tray": {
         "icon-size": 18,
         "spacing": 8
+    },
+
+    // Power button -> compact wofi power menu pinned bottom-right (the script
+    // sets Lock/Logout/Suspend/...). Same menu is bound to $mod+Escape in
+    // sway/config.
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "on-click": "~/.config/sway/power-menu.sh"
     }
 }

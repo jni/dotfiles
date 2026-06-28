@@ -232,14 +232,22 @@ set $lock swaylock -f \
 # Manual lock
 bindsym Control+Mod4+l exec $lock
 
+# Power menu (Lock/Logout/Suspend/Hibernate/Reboot/Shutdown).
+# A compact wofi list pinned to the bottom-right, also reachable from the ⏻
+# button on the Waybar tray end. Its Lock entry runs `loginctl lock-session`,
+# which the swayidle `lock` handler below turns into our themed $lock.
+bindsym $mod+Escape exec ~/.config/sway/power-menu.sh
+
 # Auto-lock + display power management.
 # - lock after 5 min idle
 # - blank the outputs after 10 min (and restore on activity)
 # - always lock right before the system suspends, so it's locked on resume
+# - `lock` fires on `loginctl lock-session` (e.g. from wlogout) -> themed $lock
 exec swayidle -w \
     timeout 300 '$lock' \
     timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
-    before-sleep '$lock'
+    before-sleep '$lock' \
+    lock '$lock'
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
