@@ -7,13 +7,14 @@
         key: "semicolon",
         description: Some("emoji picker"),
     ): Spawn("pkill -f smile; sleep 0.2; flatpak run it.mijorus.smile"),
+    (
         modifiers: [
             Ctrl,
             Shift,
         ],
-        key: "'",
+        key: "apostrophe",
         description: Some("emoji picker"),
-    ): Spawn("/home/jni/micromamba/envs/all/bin/rofimoji --action type-and-copy"),
+    ): Spawn("/home/jni/micromamba/envs/all/bin/rofimoji --action type copy"),
     (
         modifiers: [
             Super,
