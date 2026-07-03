@@ -46,6 +46,7 @@ DOTFILES_MAP: dict[str, Path] = {
     "waybar": HOME / ".config" / "waybar",
     "starship/starship.toml": HOME / ".config" / "starship.toml",
     "keyd/default.conf": Path("/etc/keyd/default.conf"),
+    "ipython/ipython_config.py": HOME / ".ipython/profile_default/startup/ipython_config.py"
 }
 
 REPO_DIR = Path(__file__).resolve().parent
