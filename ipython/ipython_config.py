@@ -1,6 +1,8 @@
 import datetime as dt
 from pathlib import Path
 
+c = get_config()
+
 # The name of the logfile to use.
 logfile_dir = Path('~/projects/ipython-logs').expanduser()
 logfile_dir.mkdir(parents=True, exist_ok=True)
@@ -10,7 +12,7 @@ logfile_fn = logfile_dir / f'automatic-log--{now:%Y-%m-%dT%H-%M-%Z}.py'
 logfile_fn.touch()
 
 # set the logfile
-c.TerminalInteractiveShell.logfile = logfile_fn
+c.TerminalInteractiveShell.logfile = str(logfile_fn)
 
 
 # Start logging to the default log file.
