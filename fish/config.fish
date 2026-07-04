@@ -2,6 +2,8 @@ if status is-interactive
     # Commands to run in interactive sessions can go here
 end
 
+set -gx EDITOR vim
+
 # Turn off syntax highlighting
 for color in fish_color_command fish_color_comment fish_color_end \
              fish_color_escape fish_color_match fish_color_operator \
