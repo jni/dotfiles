@@ -9,7 +9,14 @@
     "position": "bottom",
     "height": 24,
 
-    "modules-left": ["sway/workspaces", "sway/mode"],
+    "modules-left": [
+        "sway/workspaces",
+        "sway/mode",
+        "clock#la",
+        "clock#dc",
+        "clock#madrid",
+        "clock#melbourne"
+    ],
     "modules-center": ["clock#local"],
     "modules-right": [
         "network",
@@ -17,10 +24,6 @@
         "cpu",
         "pulseaudio",
         "battery",
-        "clock#la",
-        "clock#dc",
-        "clock#madrid",
-        "clock#melbourne",
         "tray",
         "custom/power"
     ],
@@ -75,7 +78,7 @@
         "tooltip-format": "{timeTo} ({power}W)"
     },
 
-    // i3status: the four tztime clocks. Local is centered; the others sit right.
+    // i3status: the four tztime clocks. Local is centered; the others sit left.
     "clock#local": {
         "format": "{:%a %d %b %H:%M}",
         "tooltip-format": "<tt>{calendar}</tt>"
