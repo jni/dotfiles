@@ -43,7 +43,7 @@
 
     // i3status: wireless/ethernet _first_
     "network": {
-        "format-wifi": "W: {essid} {ipaddr}",
+        "format-wifi": "🛜 {essid} {ipaddr}",
         "format-ethernet": "E: {ipaddr}",
         "format-disconnected": "down",
         "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
@@ -58,8 +58,8 @@
 
     // i3status: volume master -- now via PipeWire/PulseAudio.
     "pulseaudio": {
-        "format": "♪: {volume}%",
-        "format-muted": "♪: X",
+        "format": "🔊 {volume}%",
+        "format-muted": "🔇 X",
         "scroll-step": 5,
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "tooltip-format": "{desc}: {volume}%"
