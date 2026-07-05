@@ -25,6 +25,12 @@
         modifiers: [
             Super,
         ],
+        key: "d",
+    ): System(Launcher),
+    (
+        modifiers: [
+            Super,
+        ],
         key: "t",
     ): Disable,
     (
