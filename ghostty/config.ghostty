@@ -14,6 +14,6 @@ keybind = super+v=paste_from_clipboard
 
 background = #000000
 
-background-opacity = 0.92
+background-opacity = 0.86
 
 adjust-cursor-thickness = 2
