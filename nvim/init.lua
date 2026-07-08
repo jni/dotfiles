@@ -59,6 +59,21 @@ vim.lsp.config('basedpyright', {
 })
 vim.lsp.enable('basedpyright')
 
+-- Ghostty's `-e` strips any argument starting with `+` (it treats them as
+-- its own `+action` CLI syntax), silently dropping nvim's `+cmd` args. Route
+-- through `sh -c` so the `+cmd` is buried inside one shell-quoted string
+-- instead of being its own top-level argv token.
+local function shellquote(s)
+  return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+local function open_in_new_window(filepath, line, col)
+  local cmd = string.format('nvim %s %s',
+    shellquote(string.format('+call cursor(%d,%d)', line, col)),
+    shellquote(filepath))
+  vim.fn.jobstart({ 'ghostty', '-e', 'sh', '-c', cmd })
+end
+
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
     local bufnr = args.buf
@@ -82,13 +97,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
         local uri = location.uri or location.targetUri
         local range = location.range or location.targetSelectionRange
         local filepath = vim.uri_to_fname(uri)
-        local line = range.start.line
-        local col = range.start.character
-        vim.fn.jobstart({
-          'ghostty', '-e', 'nvim',
-          string.format('+call cursor(%d,%d)', line, col),
-          filepath
-        })
+        local line = range.start.line + 1
+        local col = range.start.character + 1
+        open_in_new_window(filepath, line, col)
       end)
     end, { buffer = bufnr, desc = "Go to definition (new window)" })
 
@@ -116,11 +127,7 @@ vim.api.nvim_create_autocmd("FileType", {
       local col = qf_item.col
 
       vim.cmd('cclose')
-      vim.fn.jobstart({
-        'ghostty', '-e', 'nvim',
-        string.format('+call cursor(%d,%d)', line, col),
-        filepath
-      })
+      open_in_new_window(filepath, line, col)
     end, { buffer = args.buf, desc = "Open reference in new window", nowait = true })
   end,
 })
