@@ -13,9 +13,9 @@ function nuke
 
     mu env create -y -f $yml_file
     mu activate all
-    uv pip uninstall -y napari
-    uv pip install -U -e "$HOME/projects/napari[dev,testing]"
-    uv pip install -U -e "$HOME/projects/skan"
-    uv pip install -U -e "$HOME/projects/affinder"
-    uv pip install -U -e "$HOME/projects/zarpaint"
+
+    for pkg in [napari skan affinder zarpaint]
+        uv pip uninstall $pkg
+        uv pip install --no-deps -e $HOME/projects/$pkg
+    end
 end
