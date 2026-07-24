@@ -46,18 +46,19 @@ require("lazy").setup({
   },
 })
 
--- Basedpyright config using native vim.lsp.config:
-vim.lsp.config('basedpyright', {
-  cmd = { 'basedpyright-langserver', '--stdio' },
+-- Ruff config using native vim.lsp.config. Ruff's built-in language server
+-- (`ruff server`) surfaces lint diagnostics -- undefined names (F821, i.e.
+-- NameErrors), redefinitions (F811), unused variables (F841), etc. -- and
+-- automatically uses the nearest pyproject.toml/ruff.toml config if the
+-- project has one, falling back to Ruff's defaults otherwise. Preferred over
+-- basedpyright since I care about much more about lint errors than type
+-- checking.
+vim.lsp.config('ruff', {
+  cmd = { 'ruff', 'server' },
   filetypes = { 'python' },
-  root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', '.git' },
-  settings = {
-    basedpyright = {
-      typeCheckingMode = 'recommended',
-    },
-  },
+  root_markers = { 'pyproject.toml', 'ruff.toml', '.ruff.toml', 'setup.py', 'setup.cfg', '.git' },
 })
-vim.lsp.enable('basedpyright')
+vim.lsp.enable('ruff')
 
 -- Ghostty's `-e` strips any argument starting with `+` (it treats them as
 -- its own `+action` CLI syntax), silently dropping nvim's `+cmd` args. Route
@@ -213,7 +214,7 @@ vim.diagnostic.config({
     severity = { min = vim.diagnostic.severity.WARN },
   },
   virtual_text = {
-    severity = { min = vim.diagnostic.severity.ERROR },
+    severity = { min = vim.diagnostic.severity.WARN },
   },
 })
 
