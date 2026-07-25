@@ -60,6 +60,28 @@ vim.lsp.config('ruff', {
 })
 vim.lsp.enable('ruff')
 
+-- Basedpyright alongside Ruff, purely for code navigation. `ruff server` is a
+-- linter/formatter server: it implements diagnostics, code actions and
+-- formatting, but *not* textDocument/definition, references, hover or rename,
+-- so gd/gr/K/<leader>rn have no server to talk to with Ruff alone. Type
+-- checking is off, so Ruff stays the source of lint diagnostics and
+-- basedpyright only contributes unresolved-import/syntax errors on top.
+vim.lsp.config('basedpyright', {
+  cmd = { 'basedpyright-langserver', '--stdio' },
+  filetypes = { 'python' },
+  root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', '.git' },
+  settings = {
+    basedpyright = {
+      -- let Ruff own import sorting
+      disableOrganizeImports = true,
+      analysis = {
+        typeCheckingMode = 'off',
+      },
+    },
+  },
+})
+vim.lsp.enable('basedpyright')
+
 -- Ghostty's `-e` strips any argument starting with `+` (it treats them as
 -- its own `+action` CLI syntax), silently dropping nvim's `+cmd` args. Route
 -- through `sh -c` so the `+cmd` is buried inside one shell-quoted string
@@ -81,9 +103,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
     -- gd: open definition in new Ghostty window
     vim.keymap.set('n', 'gd', function()
-      local clients = vim.lsp.get_clients({ bufnr = bufnr })
+      -- filter by method: Ruff attaches to Python buffers too but can't answer
+      -- this, and its offset_encoding may differ from the server that can
+      local clients = vim.lsp.get_clients({
+        bufnr = bufnr, method = 'textDocument/definition',
+      })
       if #clients == 0 then
-        print("No LSP client attached")
+        print("No LSP client supports go-to-definition here")
         return
       end
       local encoding = clients[1].offset_encoding or 'utf-16'
@@ -109,8 +135,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
       { buffer = bufnr, desc = "Go to definition (same window)" })
 
     vim.keymap.set('n', 'K',  vim.lsp.buf.hover,      { buffer = bufnr })
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, { buffer = bufnr })
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { buffer = bufnr })
+    -- NB: no buffer-local 'gr' here -- it would shadow the quickfix-based
+    -- find-references mapping defined below, which is the one we want.
   end,
 })
 
@@ -134,9 +161,13 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 vim.keymap.set('n', 'gr', function()
-  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  local bufnr = vim.api.nvim_get_current_buf()
+  local clients = vim.lsp.get_clients({
+    bufnr = bufnr, method = 'textDocument/references',
+  })
   if #clients == 0 then
-    require("fidget").notify("No LSP client attached", vim.log.levels.WARN)
+    require("fidget").notify("No LSP client supports find-references here",
+      vim.log.levels.WARN)
     return
   end
   local encoding = clients[1].offset_encoding or 'utf-16'
@@ -154,7 +185,7 @@ vim.keymap.set('n', 'gr', function()
     vim.fn.setqflist({}, ' ', { title = 'References', items = items })
     vim.cmd('copen')
   end)
-end, { buffer = bufnr, desc = "Find references (new window on select)" })
+end, { desc = "Find references (new window on select)" })
 
 -- ================== CONFIG ================= --
 
