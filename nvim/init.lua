@@ -115,7 +115,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
       local encoding = clients[1].offset_encoding or 'utf-16'
 
       local params = vim.lsp.util.make_position_params(0, encoding)
-      vim.lsp.buf_request(bufnr, 'textDocument/definition', params, function(_, result)
+      clients[1]:request('textDocument/definition', params, function(_, result)
         if not result or vim.tbl_isempty(result) then
           print("No definition found")
           return
@@ -127,7 +127,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         local line = range.start.line + 1
         local col = range.start.character + 1
         open_in_new_window(filepath, line, col)
-      end)
+      end, bufnr)
     end, { buffer = bufnr, desc = "Go to definition (new window)" })
 
     -- gD: go to definition in same window
@@ -176,7 +176,7 @@ vim.keymap.set('n', 'gr', function()
 
   require("fidget").notify("Searching for references...")
 
-  vim.lsp.buf_request(bufnr, 'textDocument/references', params, function(_, result)
+  clients[1]:request('textDocument/references', params, function(_, result)
     if not result or vim.tbl_isempty(result) then
       require("fidget").notify("No references found", vim.log.levels.WARN)
       return
@@ -184,7 +184,7 @@ vim.keymap.set('n', 'gr', function()
     local items = vim.lsp.util.locations_to_items(result, encoding)
     vim.fn.setqflist({}, ' ', { title = 'References', items = items })
     vim.cmd('copen')
-  end)
+  end, bufnr)
 end, { desc = "Find references (new window on select)" })
 
 -- ================== CONFIG ================= --
