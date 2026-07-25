@@ -279,5 +279,114 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 vim.keymap.set({"n", "x"}, "y", '"+y', { desc = "Yank to system clipboard" })
 vim.keymap.set({"n", "x"}, "Y", '"+y$', { desc = "Yank to end of line (system clipboard)" })
 
+-- gh: open the current line on GitHub, on the main branch of the `upstream`
+-- remote (the canonical repo when working on a fork), or `origin` if there is
+-- no upstream. Linking to the branch -- rather than a specific commit -- keeps
+-- the current file path valid even across renames. If the local branch has
+-- diverged from that branch, the line number is remapped by walking the diff
+-- hunks between them so it still points at the right line.
+local function gh_open_line()
+  local notify = require("fidget").notify
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" then
+    notify("No file in buffer", vim.log.levels.WARN)
+    return
+  end
+  local dir = vim.fn.fnamemodify(file, ":h")
+  local line = vim.fn.line(".")
+
+  local function git(args)
+    local out = vim.fn.systemlist(vim.list_extend({ "git", "-C", dir }, args))
+    return vim.v.shell_error == 0, out
+  end
+
+  -- repo-relative path (also verifies the file is tracked)
+  local ok, relout = git({ "ls-files", "--full-name", "--error-unmatch", "--", file })
+  if not ok or not relout[1] then
+    notify("File is not tracked by git", vim.log.levels.WARN)
+    return
+  end
+  local relpath = relout[1]
+
+  -- choose remote: prefer upstream, else origin, else the only one
+  local _, remotes = git({ "remote" })
+  local has = {}
+  for _, r in ipairs(remotes) do has[r] = true end
+  local remote = has["upstream"] and "upstream" or (has["origin"] and "origin" or remotes[1])
+  if not remote then
+    notify("No git remote configured", vim.log.levels.WARN)
+    return
+  end
+
+  -- that remote's default branch (falling back to main/master)
+  local branch
+  local okh, headref = git({ "symbolic-ref", "--short", "refs/remotes/" .. remote .. "/HEAD" })
+  if okh and headref[1] then
+    branch = headref[1]:match("[^/]+$")
+  end
+  if not branch then
+    for _, cand in ipairs({ "main", "master" }) do
+      if git({ "rev-parse", "--verify", "--quiet", remote .. "/" .. cand }) then
+        branch = cand
+        break
+      end
+    end
+  end
+  if not branch then
+    notify("No main/master branch on '" .. remote .. "'", vim.log.levels.WARN)
+    return
+  end
+  local branch_ref = remote .. "/" .. branch
+
+  -- Remap the line to its position on the branch, accounting for local
+  -- divergence: an unchanged line shifts by the net (added - removed) lines
+  -- above it. `git diff branch_ref -- file` puts the branch on the `-` side
+  -- and the working tree on the `+` side. For a hunk `@@ -a,b +c,d @@`, the
+  -- offset for lines below it is (next branch line) - (next working line);
+  -- when a side's count is 0 its number is a boundary, so the next line is
+  -- start+1 rather than start+count (hence max(count, 1)).
+  local target_line = line
+  if git({ "cat-file", "-e", branch_ref .. ":" .. relpath }) then
+    local _, diff = git({ "diff", "-U0", "--no-color", branch_ref, "--", file })
+    local off = 0
+    for _, l in ipairs(diff) do
+      local a, b, c, d = l:match("^@@ %-(%d+),?(%d*) %+(%d+),?(%d*) @@")
+      if a then
+        a, c = tonumber(a), tonumber(c)
+        b = b == "" and 1 or tonumber(b)
+        d = d == "" and 1 or tonumber(d)
+        if d > 0 and line >= c and line < c + d then
+          target_line, off = a, nil -- line falls inside a changed hunk
+          break
+        elseif line < c or (d == 0 and line == c) then
+          break -- hunk starts past our line; the accumulated offset holds
+        else
+          off = (a + math.max(b, 1)) - (c + math.max(d, 1))
+        end
+      end
+    end
+    if off then target_line = line + off end
+  else
+    notify(relpath .. " is not on " .. branch_ref .. "; link may 404", vim.log.levels.WARN)
+  end
+
+  local ok2, urlout = git({ "remote", "get-url", remote })
+  if not ok2 or not urlout[1] then
+    notify("Could not get URL for remote '" .. remote .. "'", vim.log.levels.ERROR)
+    return
+  end
+  -- normalise the git remote URL to a GitHub web base
+  local web = urlout[1]
+    :gsub("^git@([^:]+):", "https://%1/") -- scp form: git@github.com:o/r
+    :gsub("^ssh://git@", "https://")
+    :gsub("%.git$", "")
+
+  local permalink = string.format("%s/blob/%s/%s#L%d", web, branch, relpath, target_line)
+  notify("Opening " .. permalink)
+  vim.ui.open(permalink)
+end
+
+vim.keymap.set("n", "gh", gh_open_line, { desc = "Open current line on GitHub" })
+
 -- don't use a dedicated line for the command line
 vim.opt.cmdheight = 0
