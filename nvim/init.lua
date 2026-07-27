@@ -70,6 +70,21 @@ vim.lsp.config('basedpyright', {
   cmd = { 'basedpyright-langserver', '--stdio' },
   filetypes = { 'python' },
   root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', '.git' },
+  -- Nvim advertises didChangeWatchedFiles only on macOS and Windows (see
+  -- runtime/lua/vim/lsp/protocol.lua), so on Linux basedpyright can't register
+  -- file watchers: it reads each unopened file from disk once and caches it
+  -- forever. Since gd/gr open results in a *separate* nvim process, edits made
+  -- there are invisible to this instance's server and jumps land on pre-edit
+  -- line numbers. Opting in fixes that; revert this block if a huge repo ever
+  -- makes startup crawl or exhausts fs.inotify.max_user_watches.
+  capabilities = {
+    workspace = {
+      didChangeWatchedFiles = {
+        dynamicRegistration = true,
+        relativePatternSupport = true,
+      },
+    },
+  },
   settings = {
     basedpyright = {
       -- let Ruff own import sorting
