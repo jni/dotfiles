@@ -122,6 +122,14 @@ fi
 
 export PATH=${PATH}:/home/jni/.cargo/bin
 
+# nvim if it's installed, vim otherwise
+if command -v nvim >/dev/null 2>&1; then
+  export EDITOR=nvim
+else
+  export EDITOR=vim
+fi
+export VISUAL=$EDITOR
+
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'micromamba shell init' !!
 export MAMBA_EXE='/home/jni/.local/bin/micromamba';

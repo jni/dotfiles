@@ -2,7 +2,13 @@ if status is-interactive
     # Commands to run in interactive sessions can go here
 end
 
-set -gx EDITOR vim
+# nvim if it's installed, vim otherwise
+if command -q nvim
+    set -gx EDITOR nvim
+else
+    set -gx EDITOR vim
+end
+set -gx VISUAL $EDITOR
 
 # Turn off syntax highlighting
 for color in fish_color_command fish_color_comment fish_color_end \
