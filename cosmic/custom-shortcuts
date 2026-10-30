@@ -55,7 +55,7 @@
             Super,
         ],
         key: "Return",
-    ): Spawn("sh -c 'ghostty +new-window --working-directory=$HOME'"),
+    ): Spawn("sh -c 'ghostty +new-window --working-directory=$HOME 2>/dev/null || exec ghostty --working-directory=$HOME'"),
     (
         modifiers: [
             Super,
