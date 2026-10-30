@@ -2,14 +2,13 @@ name: all
 channels:
 - conda-forge
 dependencies:
-- python=3.12*
+- python
 - pip
 - uv
 - numpy
 - scipy
 - matplotlib
 - napari
-- skan
 - scikit-image
 - scikit-learn
 - ipython
@@ -39,7 +38,6 @@ dependencies:
 - pytest-rerunfailures
 - hypothesis
 - pooch
-- qtconsole
 - rich
 - bermuda
 - pretend
